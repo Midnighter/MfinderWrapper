@@ -53,6 +53,6 @@ setup(
         define_macros=[("NDEBUG", None), ("UNIX", '1')],
         )],
         py_modules=["mfinder_wrapper", os.path.join(mfinder_path, "mfinder"),
-            "interface_test", "randomise_flow", "randomise_metb"],
+            "randomise_flow", "randomise_metb"],
     )
 
