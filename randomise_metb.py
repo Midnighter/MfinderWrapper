@@ -181,5 +181,4 @@ preserve the bipartite nature of the graph. The randomised version is returned.
         total += num
         success += _flip_edges(rnd_graph, num, sets[3],
             _switch_reversible_products)
-    print "Flip success rate: %f" % (float(success) / float(total))
-    return rnd_graph
+    return (rnd_graph, (float(success) / float(total)))
