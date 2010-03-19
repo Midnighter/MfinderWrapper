@@ -8,4 +8,5 @@ mfinder/*~
 mfinder/*.pyc
 mfinder/mfinder
 mfinder/nbproject
+mfinder/_mfinder.so
 build/
