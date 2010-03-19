@@ -606,6 +606,12 @@ def main(argv, exe):
             options.target_dir = options.source_dir
         for filename in os.listdir(options.source_dir):
             if os.path.isfile(os.path.join(options.source_dir, filename)):
+                if options.pattern:
+                    mobj = options.pattern.search(filename)
+                    if not mobj:
+                        options.logger.debug("'%s' does not match the regular"\
+                            " expression!", filename)
+                        continue
                 try:
                     process_file(filename)
                 except StandardError, err:
@@ -615,7 +621,7 @@ def main(argv, exe):
                         os.path.join(options.source_dir, filename))
                     continue
             else:
-                options.logger.error("'%s' is not a valid file!",\
+                options.logger.warning("'%s' is not a valid file!",\
                     os.path.join(options.source_dir, filename))
     elif args and not  options.source_dir:
         for filename in args:
@@ -623,6 +629,12 @@ def main(argv, exe):
                 filename = os.path.normpath(os.path.join(options.current_dir,\
                     filename))
                 (options.source_dir, filename) = os.path.split(filename)
+                if options.pattern:
+                    mobj = options.pattern.search(filename)
+                    if not mobj:
+                        options.logger.debug("'%s' does not match the regular"\
+                            " expression!", filename)
+                        continue
                 if not options.target_dir:
                     options.target_dir = options.source_dir
                 try:
@@ -634,7 +646,7 @@ def main(argv, exe):
                         os.path.join(options.source_dir, filename))
                     continue
             else:
-                options.logger.error("'%s' is not a valid file!",\
+                options.logger.warning("'%s' is not a valid file!",\
                     os.path.join(options.source_dir, filename))
     else:
         raise ArgumentError("The combination of supplied options and their"\
