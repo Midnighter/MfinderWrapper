@@ -91,7 +91,7 @@ class OptionsManager(object):
         handler.setFormatter(formatter)
         self.logger = logging.getLogger("MfinderWrapper")
         self.logger.propagate = False
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.ERROR)
         self.logger.addHandler(handler)
         self.current_dir = os.getcwd()
         self.source_dir = ""
@@ -524,6 +524,10 @@ def write_usage(exe):
 
     --no-members                suppress the output of the individual motif
                                 members vertex list
+
+    --log-level <level>         set the verbosity of information printed (default
+                                is 'error' other options: 'debug', 'info',
+                                'warning', 'error', 'critical')
     """ % (__version__, exe, exe, exe, exe)
     return usage
 
@@ -536,7 +540,7 @@ def main(argv, exe):
         (opts, args) = getopt.getopt(argv, "hvd:pit:m:n:r:", ["help", "version",\
             "directory=", "post-translation", "include-symmetric",\
             "target=", "motif-size=", "numbering=", "regex=", "randomise=",\
-            "no-members", "--rnd-num="])
+            "no-members", "rnd-num=", "log-level="])
     except getopt.GetoptError, err:
         raise ArgumentError(err.msg, err.opt)
     for opt, arg in opts:
@@ -597,6 +601,12 @@ def main(argv, exe):
             try:
                 options.rnd_num = int(arg)
             except ValueError:
+                raise ArgumentError("Option \"%s\"'s argument \"%s\" has"\
+                    " the wrong value!", opt, arg)
+        elif opt in ("--log-level"):
+            try:
+                options.logger.setLevel(options.log_levels[arg])
+            except KeyError:
                 raise ArgumentError("Option \"%s\"'s argument \"%s\" has"\
                     " the wrong value!", opt, arg)
         else:
