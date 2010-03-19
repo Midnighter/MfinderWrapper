@@ -442,7 +442,8 @@ def proc_file(filename):
     rnd_counts = dict()
     for i in xrange(options.rnd_num):
         options.logger.info("Generating %dth  random graph...", i + 1)
-        rnd_graph = options.rnd_method.randomise(network, flip=100)
+        (rnd_graph, success) = options.rnd_method.randomise(network, flip=100)
+        options.logger.info("Flip success rate: %f", success)
         links = make_mfinder_network(rnd_graph)
         results = mfinder.mfinder.subgraphs_interface(links, rnd_graph.size(),\
             options.mtf_sz, rnd_graph.size()**options.mtf_sz)

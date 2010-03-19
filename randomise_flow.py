@@ -10,7 +10,6 @@ Copyright (c) 2010 Jacobs University of Bremen. All rights reserved.
 """
 
 
-from mfinder_wrapper import OptionsManager
 import networkx
 import random
 
@@ -137,7 +136,6 @@ Science, 298:824-827 (2002)
 statistics would have to be conserved. The novelty of this function is to
 preserve the bipartite nature of the graph. The randomised version is returned.
     """
-    options = OptionsManager()
     rnd_graph = graph.copy()
     success = 0
     sets = _make_groups(rnd_graph)
@@ -164,5 +162,4 @@ preserve the bipartite nature of the graph. The randomised version is returned.
         num = flip * 2 * w_mo
         total += num
         success += _flip_edges(rnd_graph, num, sets[3], _switch_single)
-    options.logger.info("Flip success rate: %f", (float(success) / float(total)))
-    return rnd_graph
+    return (rnd_graph, (float(success) / float(total)))
