@@ -93,7 +93,7 @@ class OptionsManager(object):
         self.logger.propagate = False
         self.logger.setLevel(logging.DEBUG)
         self.logger.addHandler(handler)
-        self.current_dir = ""
+        self.current_dir = os.getcwd()
         self.source_dir = ""
         self.target_dir = ""
         self.mtf_sz = 3
@@ -643,7 +643,6 @@ def main(argv, exe):
 if __name__ == '__main__':
 #    pdb.set_trace()
     options = OptionsManager()
-    options.current_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
     rc = 0
     try:
         rc = main(sys.argv[1:], sys.argv[0])
