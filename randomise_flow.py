@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # encoding: utf-8
 
 
@@ -10,11 +10,8 @@ Copyright (c) 2010 Jacobs University of Bremen. All rights reserved.
 """
 
 
-import sys
-import os
 import networkx
 import random
-import errno
 
 
 def _add_edge(graph, src, tar, bunch):

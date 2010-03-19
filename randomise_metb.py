@@ -10,10 +10,6 @@ Copyright (c) 2009 Jacobs University of Bremen. All rights reserved.
 """
 
 
-import errno
-import sys
-import os
-import networkx
 import random
 
 

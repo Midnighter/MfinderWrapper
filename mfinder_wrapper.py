@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # encoding: utf-8
 
 
@@ -474,13 +474,13 @@ def write_usage(exe):
     1. Take any number of files which represent edgelists. Only two columns are
        are parsed. Empty lines and lines beginning with '#' are ignored.
 
-       %s [options] -r <module> file1 [file2] [file3] [...]
+       %s [options] --randomise <module> file1 [file2] [file3] [...]
 
     2. Perform the same tasks but on all files in a certain directory. This can
        be combined with a regular expression to restrict the files parsed in
        that directory.
 
-       %s [options] [--regex <pattern>] -r <module> -d <path>
+       %s [options] [--regex <pattern>] --randomise <module> -d <path>
 
     3. From a given mfinder output, verify the node order within motifs and
        translate the file back into actual names. This requires the original
@@ -502,7 +502,10 @@ def write_usage(exe):
 
     -p, --post-translation <filename>
 
-    -r, --randomise <string>    python module to import that generates random
+    -r, --regex <pattern>       supply a regular expression pattern to recognise
+                                edgelist files that should be parsed
+
+    --randomise <string>        python module to import that generates random
                                 networks as a null model
 
     --rnd-num                   number of random networks considered for zscore
@@ -519,9 +522,6 @@ def write_usage(exe):
     -t, --target <directory>    supply a directory where the wrapper should write
                                 its output
 
-    --regex <pattern>           supply a regular expression pattern to recognise
-                                edgelist files that should be parsed
-
     --no-members                suppress the output of the individual motif
                                 members vertex list
     """ % (__version__, exe, exe, exe, exe)
@@ -535,7 +535,7 @@ def main(argv, exe):
     try:
         (opts, args) = getopt.getopt(argv, "hvd:pit:m:n:r:", ["help", "version",\
             "directory=", "post-translation", "include-symmetric",\
-            "target=", "motif-size=", "numbering=", "randomise=", "regex=",\
+            "target=", "motif-size=", "numbering=", "regex=", "randomise=",\
             "no-members", "--rnd-num="])
     except getopt.GetoptError, err:
         raise ArgumentError(err.msg, err.opt)
@@ -583,14 +583,14 @@ def main(argv, exe):
                     " a valid file!", opt, arg)
                 error.errno = errno.ENOENT
                 raise error
-        elif opt in ("-r", "--randomise"):
+        elif opt in ("-r", "--regex"):
+            options.pattern = re.compile(arg)
+        elif opt in ("--randomise"):
             try:
                 options.rnd_method = __import__(arg)
             except ImportError:
                 raise ArgumentError("Option \"%s\"'s argument \"%s\" is not"\
                     " a python module that can be imported!", opt, arg)
-        elif opt in ("--regex"):
-            options.pattern = re.compile(arg)
         elif opt in ("--no-members"):
             options.members_out = False
         elif opt in ("--rnd-num"):
