@@ -622,6 +622,7 @@ def main(argv, exe):
                         options.logger.debug("'%s' does not match the regular"\
                             " expression!", filename)
                         continue
+                options.logger.info("Working on '%s'...", filename)
                 try:
                     process_file(filename)
                 except StandardError, err:
@@ -647,6 +648,7 @@ def main(argv, exe):
                         continue
                 if not options.target_dir:
                     options.target_dir = options.source_dir
+                options.logger.info("Working on '%s'...", filename)
                 try:
                     process_file(filename)
                 except IOError, err:
