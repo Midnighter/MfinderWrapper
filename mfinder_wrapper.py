@@ -103,6 +103,7 @@ class OptionsManager(object):
         self.rnd_num = 100
         self.post = False
         self.pattern = None
+        self.only_members = False
         self.members_out = True
         self.__class__._singleton = self
 
@@ -416,6 +417,30 @@ def post_file(filename):
 #    write_lines(m, outfile)
 #    print "Done."
 
+def proc_members(filename):
+    # attempt preparation of mfinder analysis
+    options = OptionsManager()
+    base_file = filename.split(".", 1)[0] + "_mtf_sz%d" % options.mtf_sz
+    base_file = os.path.join(options.target_dir, base_file)
+    # parse the edges
+    edges = parse2tuples(os.path.join(options.source_dir, filename), 2)
+    # make an mfinder conform numbering of vertices, no exceptions expected
+    if not options.numbering:
+        options.numbering = make_numbering(edges)
+    network = networkx.DiGraph()
+    name2num = options.numbering[0]
+    for edge in edges:
+        network.add_edge(name2num[edge[0]], name2num[edge[1]])
+    links = make_mfinder_network(network)
+    results = mfinder.mfinder.subgraphs_interface(links, network.size(),\
+        options.mtf_sz, len(network)**options.mtf_sz)
+    (mtf_counts, mtf_uniq, members) = extract_real_motifs(results)
+    mfinder.mfinder.res_tbl_mem_free(results)
+    if options.members_out:
+        ensure_consistency(members, network)
+        reverse_translate(members, options.numbering[1])
+        write_members(members, base_file + "_members.tsv")
+
 def proc_file(filename):
     # attempt preparation of mfinder analysis
     options = OptionsManager()
@@ -453,6 +478,8 @@ def proc_file(filename):
 
 def process_file(filename):
     options = OptionsManager()
+    if options.only_members:
+        proc_members(filename)
     if options.post:
         post_file(filename)
     else:
@@ -526,6 +553,9 @@ def write_usage(exe):
     --no-members                suppress the output of the individual motif
                                 members vertex list
 
+    --only-members              generate a list of motif members only, no
+                                randomisation is applied
+
     --log-level <level>         set the verbosity of information printed (default
                                 is 'error' other options: 'debug', 'info',
                                 'warning', 'error', 'critical')
@@ -541,16 +571,16 @@ def main(argv, exe):
         (opts, args) = getopt.getopt(argv, "hvd:pit:m:n:r:", ["help", "version",\
             "directory=", "post-translation", "include-symmetric",\
             "target=", "motif-size=", "numbering=", "regex=", "randomise=",\
-            "no-members", "rnd-num=", "log-level="])
+            "no-members", "only-members", "rnd-num=", "log-level="])
     except getopt.GetoptError, err:
         raise ArgumentError(err.msg, err.opt)
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             options.logger.critical(write_usage(exe))
-            return None
+            return 0
         elif opt in ("-v", "--version"):
             options.logger.critical("Version %s.", __version__)
-            return None
+            return 0
         elif opt in ("-d", "--directory"):
             tar = os.path.normpath(os.path.join(options.current_dir, arg))
             if os.path.isdir(tar):
@@ -598,6 +628,8 @@ def main(argv, exe):
                     " a python module that can be imported!", opt, arg)
         elif opt in ("--no-members"):
             options.members_out = False
+        elif opt in ("--only-members"):
+            options.only_members = True
         elif opt in ("--rnd-num"):
             try:
                 options.rnd_num = int(arg)
@@ -680,5 +712,5 @@ if __name__ == '__main__':
             rc = 1
     finally:
         logging.shutdown()
-    sys.exit(rc)
+        sys.exit(rc)
 
