@@ -480,7 +480,7 @@ def process_file(filename):
     options = OptionsManager()
     if options.only_members:
         proc_members(filename)
-    if options.post:
+    elif options.post:
         post_file(filename)
     else:
         proc_file(filename)
