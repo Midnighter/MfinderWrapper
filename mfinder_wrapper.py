@@ -10,6 +10,7 @@ Copyright (c) 2008 Jacobs University Bremen. All rights reserved.
 """
 
 
+import itertools
 import os
 import logging
 import sys
@@ -238,7 +239,7 @@ def parse_members(filename):
     motif_id = 0
     pattern = re.compile("(\\d+)")
     for (index, line) in enumerate(content):
-        if line.startswith("\n"):
+        if line.startswith("\n") or line.startswith("#") or line.startswith("\r\n"):
             continue
         elif line.startswith("subgraph"):
             mobj = pattern.search(line)
@@ -277,28 +278,21 @@ def reverse_translate(members, num2name):
 
 # ensure that a link required by the adjacency matrix of a motif is present
 def verify_tuple(n_tuple, mtf_adj, network):
-    rc = True
-    for (src, tar) in mtf_adj.out_edges_iter():
-        rc &= network.has_edge(n_tuple[src], n_tuple[tar])
-    return rc
+    for n in n_tuple:
+        if not network.has_node(n):
+            return False
+    for (src, tar) in mtf_adj.edges_iter():
+        if not network.has_edge(n_tuple[src], n_tuple[tar]):
+            return False
+    return True
 
-# gives all permutations of a list
-# adopted from: http://snippets.dzone.com/posts/show/753
-def all_permutations(a):
-    if len(a) <=1:
-        yield a
-    else:
-        for perm in all_permutations(a[1:]):
-            for i in range(len(perm) + 1):
-                yield perm[:i] + a[0:1] + perm[i:]
-
-def test_permutations(mtf_perms, n_tuple, mtf_adj, network):
+def test_permutations(n_tuple, mtf_adj, network):
     options = OptionsManager()
     # tmp list to store permuted ordering of vertices
     tmp_members = list()
     tmp_tuple = list()
     # check all possible permutations
-    for perm in mtf_perms:
+    for perm in itertools.permutations(xrange(options.mtf_sz)):
         # build permuted motif members
         for index in perm:
             tmp_tuple.append(n_tuple[index])
@@ -312,7 +306,7 @@ def test_permutations(mtf_perms, n_tuple, mtf_adj, network):
     return tmp_members
 
 # verifies all occurences of a specific motif
-def verify_links(iden, members, network, mtf_perms):
+def verify_links(iden, members, network):
     options = OptionsManager()
     # motif adjacency
     mtf_adj = motif_adjacency(iden, options.mtf_sz)
@@ -321,7 +315,7 @@ def verify_links(iden, members, network, mtf_perms):
     tmp_members = list()
     # check each vertex tuple
     for n_tuple in members:
-        tmp_tuple = test_permutations(mtf_perms, n_tuple, mtf_adj, network)
+        tmp_tuple = test_permutations(n_tuple, mtf_adj, network)
         if not tmp_tuple:
             options.logger.warning("No valid permutation for %s", str(n_tuple))
             continue
@@ -347,11 +341,8 @@ def ensure_consistency(members, network):
     # column switches that may be tried
     # list of all permutations of indeces
     motif_perms = list()
-    rotation = range(options.mtf_sz)
-    for p in all_permutations(rotation):
-        motif_perms.append(p)
     for iden in members:
-        members[iden] = verify_links(iden, members[iden], network, motif_perms)
+        members[iden] = verify_links(iden, members[iden], network)
 
 def make_mfinder_network(network):
     links = mfinder.mfinder.IntArray(network.size()* 2)
