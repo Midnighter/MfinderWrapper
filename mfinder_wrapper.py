@@ -287,6 +287,7 @@ def verify_tuple(n_tuple, mtf_adj, network):
     return True
 
 def test_permutations(n_tuple, mtf_adj, network):
+    options = OptionsManager()
     # check all possible permutations
     for perm in itertools.permutations(xrange(options.mtf_sz)):
         # build permuted motif members
