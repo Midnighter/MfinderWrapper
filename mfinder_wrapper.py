@@ -19,7 +19,7 @@ import re
 import errno
 import mfinder.mfinder
 import networkx
-#import pdb
+import random
 import numpy
 
 
@@ -287,23 +287,12 @@ def verify_tuple(n_tuple, mtf_adj, network):
     return True
 
 def test_permutations(n_tuple, mtf_adj, network):
-    options = OptionsManager()
-    # tmp list to store permuted ordering of vertices
-    tmp_members = list()
-    tmp_tuple = list()
     # check all possible permutations
     for perm in itertools.permutations(xrange(options.mtf_sz)):
         # build permuted motif members
-        for index in perm:
-            tmp_tuple.append(n_tuple[index])
+        tmp_tuple = [n_tuple[index] for index in perm]
         if verify_tuple(tmp_tuple, mtf_adj, network):
-            tmp_members.append(tmp_tuple)
-            tmp_tuple = []
-            if not options.incl_sym:
-                return tmp_members
-        else:
-            tmp_tuple = []
-    return tmp_members
+            yield tmp_tuple
 
 # verifies all occurences of a specific motif
 def verify_links(iden, members, network):
@@ -311,15 +300,21 @@ def verify_links(iden, members, network):
     # motif adjacency
     mtf_adj = motif_adjacency(iden, options.mtf_sz)
     # tmp list to store permuted ordering of vertices
-    tmp_tuple = list()
     tmp_members = list()
     # check each vertex tuple
     for n_tuple in members:
-        tmp_tuple = test_permutations(n_tuple, mtf_adj, network)
-        if not tmp_tuple:
+        tmp_tuple = [perm for perm in test_permutations(n_tuple, mtf_adj, network)]
+        length = len(tmp_tuple)
+        if length == 0:
             options.logger.warning("No valid permutation for %s", str(n_tuple))
             continue
-        tmp_members.extend(tmp_tuple)
+        elif (not options.incl_sym) and length > 1:
+            # we want only a single permutation of the possible symmetric ones
+            tmp_members.append(tmp_tuple[0])
+            # we randomly pick one
+#            tmp_members.append(random.choice(tmp_tuple))
+        else:
+            tmp_members.extend(tmp_tuple)
     return tmp_members
 
 # creates the adjacency list for any motif ID
@@ -337,10 +332,6 @@ def motif_adjacency(iden, mtf_size):
 
 # wraps up edge consistency check for each ID found
 def ensure_consistency(members, network):
-    options = OptionsManager()
-    # column switches that may be tried
-    # list of all permutations of indeces
-    motif_perms = list()
     for iden in members:
         members[iden] = verify_links(iden, members[iden], network)
 
