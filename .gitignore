@@ -1,6 +1,7 @@
 *.o
 *.pyc
 *~
+*.swp
 nbproject/
 mfinder/Makefile-mfinder1.2.mk
 mfinder/*.o

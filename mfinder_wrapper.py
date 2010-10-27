@@ -276,65 +276,58 @@ def reverse_translate(members, num2name):
             for (index, vertex) in enumerate(member):
                 member[index] = num2name[vertex]
 
-# ensure that a link required by the adjacency matrix of a motif is present
-def verify_tuple(n_tuple, mtf_adj, network):
-    for n in n_tuple:
-        if not network.has_node(n):
-            return False
-    for (src, tar) in mtf_adj.edges_iter():
-        if not network.has_edge(n_tuple[src], n_tuple[tar]):
-            return False
-    return True
-
-def test_permutations(n_tuple, mtf_adj, network):
+def find_symmetries(mtf_adj):
     options = OptionsManager()
-    # check all possible permutations
-    for perm in itertools.permutations(xrange(options.mtf_sz)):
-        # build permuted motif members
-        tmp_tuple = [n_tuple[index] for index in perm]
-        if verify_tuple(tmp_tuple, mtf_adj, network):
-            yield tmp_tuple
+    return [triple for triple in itertools.permutations(xrange(options.mtf_sz))\
+            if all(adj.has_edge(triple[src], triple[tar])\
+                    for (src, tar) in adj.edges_iter())]
 
-# verifies all occurences of a specific motif
-def verify_links(iden, members, network):
-    options = OptionsManager()
-    # motif adjacency
-    mtf_adj = motif_adjacency(iden, options.mtf_sz)
-    # tmp list to store permuted ordering of vertices
-    tmp_members = list()
-    # check each vertex tuple
-    for n_tuple in members:
-        tmp_tuple = [perm for perm in test_permutations(n_tuple, mtf_adj, network)]
-        length = len(tmp_tuple)
-        if length == 0:
-            options.logger.warning("No valid permutation for %s", str(n_tuple))
-            continue
-        elif (not options.incl_sym) and length > 1:
-            # we want only a single permutation of the possible symmetric ones
-            tmp_members.append(tmp_tuple[0])
-            # we randomly pick one
-#            tmp_members.append(random.choice(tmp_tuple))
-        else:
-            tmp_members.extend(tmp_tuple)
-    return tmp_members
-
-# creates the adjacency list for any motif ID
-# could be replaced by bin(id) if the width of binary string could be adjusted
-# and most importantly the order of the binary string would begin with least
-# significant digit
-def motif_adjacency(iden, mtf_size):
-    num = iden
-    motif_adj = networkx.DiGraph()
-    for i in xrange(mtf_size**2):
-        if num % 2:
-            motif_adj.add_edge(i / mtf_size, i % mtf_size)
-        num = num>>1
-    return motif_adj
+def motif_adjacency(mtf_id, mtf_sz):
+    """
+Very fast - due to python, platform-independent - way of computing the motif
+adjacency matrix from the binary representation of its integer ID.
+    """
+    mtf_adj = networkx.DiGraph()
+    # infinitely increasing index 'i'
+    for i in itertools.count():
+        # if the bits in 'mtf_id' have been exhausted, exit loop
+        if not mtf_id:
+            break
+        # add a link if the least significant bit is '1'
+        if mtf_id & 1:
+            # in adjacency matrix row index is the source node
+            # and column is the target node
+            mtf_adj.add_edge(i // mtf_sz, i % mtf_sz)
+        # remove the least significant bit by shifting to the right
+        mtf_id >>= 1
+    return mtf_adj
 
 # wraps up edge consistency check for each ID found
 def ensure_consistency(members, network):
-    for iden in members:
-        members[iden] = verify_links(iden, members[iden], network)
+    options = OptionsManager()
+    new_members = dict()
+    setdef = new_members.setdefault
+    for (mtf_id, tuples) in members.iteritems():
+        mtf_adj = motif_adjacency(mtf_id, options.mtf_sz)
+        for k_tuple in tuples:
+            # generate a list of node tuples out of 'k_tuple' that are
+            # consistent with the network structure
+            tmp_tuples = [perm for perm in itertools.permutations(k_tuple) if\
+                    all(network.has_edge(perm[src], perm[tar])\
+                    for (src, tar) in mtf_adj.edges_iter())]
+            length = len(tmp_tuples)
+            if length == 0:
+                options.logger.error("No valid permutation for %s in motif ID %d!",\
+                    str(k_tuple), mtf_id)
+                continue
+            elif (not options.incl_sym) and length > 1:
+                # we do not include symmetries, choose only one
+                setdef(mtf_id, []).append(tmp_tuples[0])
+                # this could also be done by a random process
+                # setdef(mtf_id, []).append(random.choice(tmp_tuples))
+            else:
+                setdef(mtf_id, []).extend(tmp_tuples)
+    return new_members
 
 def make_mfinder_network(network):
     links = mfinder.mfinder.IntArray(network.size()* 2)
@@ -420,7 +413,7 @@ def proc_members(filename):
     (mtf_counts, mtf_uniq, members) = extract_real_motifs(results)
     mfinder.mfinder.res_tbl_mem_free(results)
     if options.members_out:
-        ensure_consistency(members, network)
+        members = ensure_consistency(members, network)
         reverse_translate(members, options.numbering[1])
         write_members(members, base_file + "_members.tsv")
 
@@ -444,7 +437,7 @@ def proc_file(filename):
     (mtf_counts, mtf_uniq, members) = extract_real_motifs(results)
     mfinder.mfinder.res_tbl_mem_free(results)
     if options.members_out:
-        ensure_consistency(members, network)
+        members = ensure_consistency(members, network)
         reverse_translate(members, options.numbering[1])
         write_members(members, base_file + "_members.tsv")
     rnd_counts = dict()
