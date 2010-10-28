@@ -417,6 +417,29 @@ def proc_members(filename):
         reverse_translate(members, options.numbering[1])
         write_members(members, base_file + "_members.tsv")
 
+def process_network(graph):
+    options = OptionsManager()
+    if not options.numbering:
+        options.numbering = make_numbering(graph.edges())
+    name2num = options.numbering[0]
+    new_graph = networkx.DiGraph()
+    for (src, tar) in graph.edges_iter():
+        new_graph.add_edge(name2num[src], name2num[tar])
+    links = make_mfinder_network(new_graph)
+    results = mfinder.mfinder.subgraphs_interface(links, new_graph.size(),\
+            options.mtf_sz, len(new_graph)**options.mtf_sz)
+    (mtf_counts, mtf_uniq, members) = extract_real_motifs(results)
+    mfinder.mfinder.res_tbl_mem_free(results)
+    rnd_counts = dict()
+    for i in xrange(options.rnd_num):
+        (rnd_graph, success) = options.rnd_method.randomise(new_graph, flip=100)
+        links = make_mfinder_network(rnd_graph)
+        results = mfinder.mfinder.subgraphs_interface(links, rnd_graph.size(),\
+                options.mtf_sz, len(rnd_graph)**options.mtf_sz)
+        extract_rnd_motifs(results, rnd_counts)
+        mfinder.mfinder.res_tbl_mem_free(results)
+    return (mtf_counts, rnd_counts)
+
 def proc_file(filename):
     # attempt preparation of mfinder analysis
     options = OptionsManager()
@@ -447,7 +470,7 @@ def proc_file(filename):
         options.logger.info("Flip success rate: %f", success)
         links = make_mfinder_network(rnd_graph)
         results = mfinder.mfinder.subgraphs_interface(links, rnd_graph.size(),\
-            options.mtf_sz, rnd_graph.size()**options.mtf_sz)
+            options.mtf_sz, len(rnd_graph)**options.mtf_sz)
         extract_rnd_motifs(results, rnd_counts)
         mfinder.mfinder.res_tbl_mem_free(results)
     write_zscores(mtf_counts, mtf_uniq, rnd_counts, base_file + "_mat.tsv")
