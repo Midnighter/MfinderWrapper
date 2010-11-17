@@ -322,9 +322,9 @@ def ensure_consistency(members, network):
                 continue
             elif (not options.incl_sym) and length > 1:
                 # we do not include symmetries, choose only one
-                setdef(mtf_id, []).append(tmp_tuples[0])
+                #setdef(mtf_id, []).append(tmp_tuples[0])
                 # this could also be done by a random process
-                # setdef(mtf_id, []).append(random.choice(tmp_tuples))
+                setdef(mtf_id, []).append(random.choice(tmp_tuples))
             else:
                 setdef(mtf_id, []).extend(tmp_tuples)
     return new_members

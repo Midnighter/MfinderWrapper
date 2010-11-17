@@ -123,5 +123,5 @@ statistics would have to be conserved.
         num = flip * w_bi # only single multiplication as edges are twice in
         # group
         total += num
-        success += _flip_edges(rnd_graph, num, sets[1], _switch_single)
+        success += _flip_edges(rnd_graph, num, sets[1], _switch_double)
     return (rnd_graph, (float(success) / float(total)))
