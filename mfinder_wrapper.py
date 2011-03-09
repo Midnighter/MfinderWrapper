@@ -219,3 +219,25 @@ class MfinderWrapper(object):
             self.zscores[mtf_id] = [self.mtf_counts[mtf_id],\
                 rnd_mean, rnd_std, z_score, 0., self.mtf_uniq[mtf_id], c_real]
 
+    def compute_zscores_from_extern(self)
+        """
+        Requires mtf_counts, mtf_uniq, and rnd_counts to be set.
+        """
+        self.zscores = dict()
+        total = float(sum(self.mtf_counts.itervalues()))
+        for mtf_id in self.mtf_counts:
+            mtf_num = float(self.mtf_counts[mtf_id])
+            if self.rnd_counts.has_key(mtf_id):
+                rnd_mean = numpy.mean(self.rnd_counts[mtf_id])
+                rnd_std = numpy.std(self.rnd_counts[mtf_id])
+            else:
+                rnd_mean = 0.0
+                rnd_std = 0.0
+            if rnd_std == 0.0:
+                z_score = numpy.nan
+            else:
+                z_score = (mtf_num - rnd_mean) / rnd_std
+            c_real = mtf_num / total * 1000.0
+            self.zscores[mtf_id] = [self.mtf_counts[mtf_id],\
+                rnd_mean, rnd_std, z_score, 0., self.mtf_uniq[mtf_id], c_real]
+

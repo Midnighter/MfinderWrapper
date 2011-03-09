@@ -4,9 +4,6 @@
 *.swp
 nbproject/
 mfinder/Makefile-mfinder1.2.mk
-mfinder/*.o
-mfinder/*~
-mfinder/*.pyc
 mfinder/mfinder
 mfinder/nbproject
 mfinder/_mfinder.so
