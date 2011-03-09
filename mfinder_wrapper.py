@@ -219,7 +219,7 @@ class MfinderWrapper(object):
             self.zscores[mtf_id] = [self.mtf_counts[mtf_id],\
                 rnd_mean, rnd_std, z_score, 0., self.mtf_uniq[mtf_id], c_real]
 
-    def compute_zscores_from_extern(self)
+    def compute_zscores_from_extern(self):
         """
         Requires mtf_counts, mtf_uniq, and rnd_counts to be set.
         """
