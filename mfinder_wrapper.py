@@ -219,10 +219,20 @@ class MfinderWrapper(object):
             self.zscores[mtf_id] = [self.mtf_counts[mtf_id],\
                 rnd_mean, rnd_std, z_score, 0., self.mtf_uniq[mtf_id], c_real]
 
-    def compute_zscores_from_extern(self):
+    def compute_zscores_from_extern(self, original_graph, rnd_graphs):
         """
         Requires mtf_counts, mtf_uniq, and rnd_counts to be set.
         """
+        self.graph = original_graph
+        self.count_subgraphs()
+        self.rnd_graphs = rnd_graphs
+        self.rnd_counts = defaultdict(list)
+        for rnd_graph in self.rnd_graphs:
+            links = self._make_mfinder_network(rnd_graph)
+            results = mfinder.subgraphs_interface(links, rnd_graph.size(),\
+                self.mtf_sz, min(sys.maxint, len(rnd_graph) ** self.mtf_sz))
+            self._extract_rnd_motifs(results)
+            mfinder.res_tbl_mem_free(results)
         self.zscores = dict()
         total = float(sum(self.mtf_counts.itervalues()))
         for mtf_id in self.mtf_counts:
