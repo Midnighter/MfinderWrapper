@@ -178,7 +178,6 @@ class MfinderWrapper(object):
         self._make_numbering()
         links = self._make_mfinder_network()
         self.max_length = int(min(2 ** 31 - 1, len(self.graph) ** self.mtf_sz))
-        print self.max_length, type(self.max_length)
         results = mfinder.subgraphs_interface(links, self.graph.size(),\
             self.mtf_sz, self.max_length)
         self._extract_real_motifs(results)
