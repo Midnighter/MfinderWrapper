@@ -178,7 +178,7 @@ class MfinderWrapper(object):
         self._make_numbering()
         links = self._make_mfinder_network()
         results = mfinder.subgraphs_interface(links, self.graph.size(),\
-            self.mtf_sz, min(sys.maxint, len(self.graph) ** self.mtf_sz))
+            self.mtf_sz, int(min(sys.maxint, len(self.graph) ** self.mtf_sz)))
         self._extract_real_motifs(results)
         mfinder.res_tbl_mem_free(results)
         self._reverse_translate()
@@ -198,7 +198,7 @@ class MfinderWrapper(object):
             self.logger.info("Flip success rate: %f", success)
             links = self._make_mfinder_network(rnd_graph)
             results = mfinder.subgraphs_interface(links, rnd_graph.size(),\
-                self.mtf_sz, min(sys.maxint, len(rnd_graph) ** self.mtf_sz))
+                self.mtf_sz, int(min(sys.maxint, len(rnd_graph) ** self.mtf_sz)))
             self._extract_rnd_motifs(results)
             mfinder.res_tbl_mem_free(results)
         self.zscores = dict()
