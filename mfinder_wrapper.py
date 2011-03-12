@@ -18,7 +18,6 @@ Mfinder Wrapper
 """
 
 
-import sys
 import itertools
 import os
 import mfinder.mfinder as mfinder
@@ -178,11 +177,7 @@ class MfinderWrapper(object):
         """
         self._make_numbering()
         links = self._make_mfinder_network()
-#        try:
-        self.max_length = int(min(sys.maxint, len(self.graph) **
-                    self.mtf_sz))
-#        except OverflowError:
-#            self.max_length = sys.maxint
+        self.max_length = int(min(2 ** 31 - 1, len(self.graph) ** self.mtf_sz))
         print self.max_length, type(self.max_length)
         results = mfinder.subgraphs_interface(links, self.graph.size(),\
             self.mtf_sz, self.max_length)
