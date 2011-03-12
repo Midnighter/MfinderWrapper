@@ -47,7 +47,7 @@ class MfinderWrapper(object):
         self.mtf_uniq = None
         self.mtf_counts = None
         self.members = None
-        self.rnd_module = None
+        self.rewire = None
         self.rnd_num = random_samples
         self.rnd_counts = None
         self.rnd_graphs = None
@@ -193,7 +193,7 @@ class MfinderWrapper(object):
         self.rnd_graphs = list()
         for i in xrange(self.rnd_num):
             self.logger.info("Generating %dth  random graph...", i + 1)
-            (rnd_graph, success) = self.rnd_module.randomise(template, flip=100)
+            (rnd_graph, success) = self.rewire.randomise(self.graph, flip=100)
             self.rnd_graphs.append(rnd_graph)
             self.logger.info("Flip success rate: %f", success)
             links = self._make_mfinder_network(rnd_graph)
