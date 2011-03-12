@@ -43,6 +43,7 @@ class MfinderWrapper(object):
         self.name2num = None
         self.num2name = None
         self.mtf_sz = subgraph_size
+        self.max_length = None
         self.incl_sym = False
         self.mtf_uniq = None
         self.mtf_counts = None
@@ -177,8 +178,14 @@ class MfinderWrapper(object):
         """
         self._make_numbering()
         links = self._make_mfinder_network()
+#        try:
+        self.max_length = int(min(sys.maxint, len(self.graph) **
+                    self.mtf_sz))
+#        except OverflowError:
+#            self.max_length = sys.maxint
+        print self.max_length, type(self.max_length)
         results = mfinder.subgraphs_interface(links, self.graph.size(),\
-            self.mtf_sz, int(min(sys.maxint, len(self.graph) ** self.mtf_sz)))
+            self.mtf_sz, self.max_length)
         self._extract_real_motifs(results)
         mfinder.res_tbl_mem_free(results)
         self._reverse_translate()
@@ -198,7 +205,7 @@ class MfinderWrapper(object):
             self.logger.info("Flip success rate: %f", success)
             links = self._make_mfinder_network(rnd_graph)
             results = mfinder.subgraphs_interface(links, rnd_graph.size(),\
-                self.mtf_sz, int(min(sys.maxint, len(rnd_graph) ** self.mtf_sz)))
+                self.mtf_sz, self.max_length)
             self._extract_rnd_motifs(results)
             mfinder.res_tbl_mem_free(results)
         self.zscores = dict()
@@ -230,7 +237,7 @@ class MfinderWrapper(object):
         for rnd_graph in self.rnd_graphs:
             links = self._make_mfinder_network(rnd_graph)
             results = mfinder.subgraphs_interface(links, rnd_graph.size(),\
-                self.mtf_sz, min(sys.maxint, len(rnd_graph) ** self.mtf_sz))
+                self.mtf_sz, self.max_length)
             self._extract_rnd_motifs(results)
             mfinder.res_tbl_mem_free(results)
         self.zscores = dict()
