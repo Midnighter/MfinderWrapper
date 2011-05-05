@@ -1,12 +1,20 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
 
 """
-setup.py
+============
+Setup Script
+============
 
-Created by Moritz Beber 2010-02-09.
-Copyright (c) 2010 Jacobs University of Bremen. All rights reserved.
+:Author:
+    Moritz Emanuel Beber
+:Date:
+    2010-02-09
+:Copyright:
+    Copyright(c) 2010 Jacobs University of Bremen. All rights reserved.
+:File:
+    setup.py
 """
 
 
@@ -18,7 +26,7 @@ mfinder_path = os.path.join("mfinderwrapper", "mfinder")
 
 
 setup(
-    name = "mfinder_wrapper",
+    name = "mfinderwrapper",
     version = "0.1",
     description = "Motif Analysis Wrapper with Custom Randomisation",
     author = "Moritz Beber",

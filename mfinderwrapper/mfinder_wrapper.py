@@ -18,6 +18,9 @@ Mfinder Wrapper
 """
 
 
+__all__ = ["MfinderWrapper"]
+
+
 import itertools
 import os
 import mfinder.mfinder as mfinder
